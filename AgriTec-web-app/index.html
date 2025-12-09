@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriTech vision</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+   <style>/* 🌾 TEAM SECTION (ABOUT) */
+.about {
+  background: linear-gradient(135deg, #f7fff8, #e8f5e9);
+  padding: 80px 20px;
+  text-align: center;
+  position: relative;
+}
+
+.about .heading h1 {
+  font-size: 38px;
+  font-weight: 800;
+  color: #2c5f2d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.about .heading p {
+  font-size: 16px;
+  color: #555;
+  max-width: 750px;
+  margin: 15px auto 60px;
+  line-height: 1.7;
+}
+
+/* 🌾 Team Cards Container */
+.about .box-container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 🌾 Team Card Styling */
+.about .box {
+  background: #fff;
+  border-radius: 25px;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  transition: all 0.4s ease;
+  width: 260px;
+  text-align: center;
+  padding-bottom: 25px;
+  position: relative;
+}
+
+.about .box:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.18);
+}
+
+/* 🌾 Profile Picture */
+.about .box img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-bottom: 4px solid #2c5f2d;
+  transition: all 0.3s ease;
+}
+
+.about .box:hover img {
+  filter: brightness(1.1);
+}
+
+
+/* 🌾 Member Name & Details */
+.about .box h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c5f2d;
+  margin-top: 15px;
+  text-transform: capitalize;
+}
+
+.about .box p {
+  font-size: 14px;
+  color: #555;
+  margin: 8px 0 15px;
+  line-height: 1.4;
+}
+
+/* 🌾 Social Links */
+.about .social-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.about .social-links a {
+  color: #2c5f2d;
+  font-size: 22px;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.about .social-links a:hover {
+  color: #ff5c5c;
+  transform: scale(1.3);
+}
+
+/* 🌾 Glow on Hover */
+.about .box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 25px;
+  background: linear-gradient(45deg, #2c5f2d, #9be19b);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+.about .box:hover::before {
+  opacity: 0.15;
+}
+
+/* 🌾 Responsive Design */
+@media (max-width: 1024px) {
+  .about .box {
+    width: 45%;
+  }
+}
+
+@media (max-width: 768px) {
+  .about .box {
+    width: 80%;
+  }
+
+  .about .heading h1 {
+    font-size: 30px;
+  }
+}
+              .slider-container {
+            width: 100%;
+            height: 550px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Slides */
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .active {
+            opacity: 1;
+        }
+
+        /* Next & Prev Buttons */
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            color: white;
+            padding: 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            user-select: none;
+        }
+
+        .prev { left: 20px; }
+        .next { right: 20px; }
+
+        /* Dots */
+        .dots {
+            position: absolute;
+            width: 100%;
+            bottom: 20px;
+            text-align: center;
+        }
+
+        .dot {
+            height: 15px;
+            width: 15px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .active-dot {
+            background-color: white;
+        }
+
+   </style>
+  </head>
+
+  <body>
+    <!-- navbar sections starts  -->
+    <header class="header">
+      <div class="logo">
+        <h1>AgriTech vision</h1>
+      </div>
+
+      <nav class="navbar">
+        <a href="https://kissan.ai/">chat boat</a>
+        <a href="#home">Home</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#footer">Contact</a>
+        <a href="explore/index.html" class="btn">EXPLORE NOW</a>
+      </nav>
+
+      <div class="fas fa-bars" id="menu-btn"></div>
+    </header>
+    <!-- navbar sections ends  -->
+
+    <!-- home section stars  -->
+
+  <div class="slider-container">
+
+        <div class="slide active">
+            <img src="images/amit-front2.jpg">
+        </div>
+
+        <div class="slide">
+            <img src="images/BUTY.jpg">
+        </div>
+
+        <div class="slide">
+            <img src="images/farmer.jpg">
+        </div>
+        <div class="slide">
+            <img src="images/ff.jpg">
+        </div>
+
+        <!-- Buttons -->
+        <span class="prev" onclick="changeSlide(-1)">❮</span>
+        <span class="next" onclick="changeSlide(1)">❯</span>
+
+        <!-- Dots -->
+        <div class="dots">
+            <span class="dot active-dot" onclick="currentSlide(0)"></span>
+            <span class="dot" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+                 <span class="dot" onclick="currentSlide(3)"></span>
+        </div>
+
+    </div>
+
+    <!-- home section ends -->
+
+    <!-- features sectin starts  -->
+
+    <section class="features" id="features">
+      <div class="heading">
+        <h1>Features</h1>
+        <p>
+          AgriTech vision provides farmers with essential tools for smarter farming. It
+          offers personalized crop recommendations based on soil and climate,
+          helps identify plant diseases through image analysis, and provides
+          real-time weather forecasts. The app also includes features for crop
+          planning and guidance, ensuring optimal farming decisions for better
+          yields and healthier crops.
+        </p>
+      </div>
+
+      <div class="button-container0">
+        <a href="https://crop-recomm.streamlit.app/" class="buttonn active"
+          >Crop Recommendations</a
+        >
+        <a
+          href="https://agrisens-crop-disease-pred.streamlit.app/"
+          class="buttonn"
+          >Identify Plant Diseases</a
+        >
+       <!-- <a href="weather-forecast/index.html" class="buttonn"
+          >Today's Weather Forecast</a
+        >-->
+        <a href="ab.html" class="buttonn"
+          >Fertilizer recommendation</a
+        >
+        <a href="chatboat_she.html" class="buttonn"
+          >government schemes</a
+        >
+        <a href="https://kissan.ai/" class="buttonn"
+          >AI chatboat</a
+        >
+        <a href="guide/index.html" class="buttonn">Smart Farming Guidance</a>
+      </div>
+
+      <div class="row">
+        <!-- 0 Tab  -->
+        <div class="image">
+          <img
+            src="images/weather.jpg"
+            alt="crop-planning"
+            class="rounded-corner-image"
+          />
+        </div>
+
+        <div class="content">
+          <h1>weather Forecast</h1>
+          <p>
+            Plan Your Farming With Precision! Check Real-Time Weather Insights
+            On Temperature, Humidity, And More. Integrated With Our
+            Crop-Prediction Model For Optimal Decisions. Explore Historical
+            Data, Get Alerts, And Access Educational Resources.
+          </p>
+          <a href="#" class="all-btn">more info</a>
+        </div>
+
+        <!-- 0 Tab  -->
+
+        <!-- 1 Tab  -->
+
+        <div class="content">
+          <h1>Smart Crop Planning</h1>
+          <p>
+            Harness the power of data analysis to predict crop suitability,
+            providing insights into optimal cultivation conditions. AgriTech vision
+            optimizes farming decisions based on comprehensive factors like soil
+            quality, weather, and more.
+          </p>
+          <a href="#" class="all-btn">more info</a>
+        </div>
+
+        <div class="image">
+          <img
+            src="images/crop-planning.jpg"
+            alt="crop-planning"
+            class="rounded-corner-image"
+          />
+        </div>
+
+        <!-- 1 Tab  -->
+
+        <!-- 2 Tab  -->
+        <div class="image">
+          <img
+            src="images/desease-dect.jpeg"
+            alt="Disease-Detection"
+            class="rounded-corner-image"
+          />
+        </div>
+
+        <div class="content">
+          <h1>Plant Disease Identification</h1>
+          <p>
+            Assist farmers in detecting plant diseases by enabling image
+            uploads, utilizing this analysis for prompt and precise
+            identification, enhancing farming efficiency and crop management.
+          </p>
+          <a href="#" class="all-btn">more info</a>
+        </div>
+
+        <!-- 2 Tab  -->
+
+        <!-- 3 Tab  -->
+
+        <div class="content">
+          <h1>Smart Farming, Simple Guidance</h1>
+          <p>
+            Smart Crop Guide offers a simple, step-by-step plan for growing
+            crops. It provides expert planting tips, tracks growth stages, and
+            sends watering reminders. The app also gives pest control advice,
+            harvest timing, weather updates, and fertilizer recommendations to
+            ensure healthy crops.
+          </p>
+
+          <a href="#" class="all-btn">more info</a>
+        </div>
+
+        <div class="image">
+          <img
+            src="images/guide.png"
+            alt="ranked-recommendations"
+            class="rounded-corner-image"
+          />
+        </div>
+
+        <!-- 3 Tab  -->
+
+        <!-- 4 Tab  -->
+
+        <div class="image">
+          <img
+            src="images/modern-farm.jpg"
+            alt="modern-farms"
+            class="rounded-corner-image"
+          />
+        </div>
+
+        <div class="content">
+          <h1>Innovations for Modern Farms</h1>
+          <p>
+            Smart Crop Tech, Precision Farming, and Customizable Solutions for
+            Sustainable and Efficient Agriculture!
+          </p>
+          <a href="#" class="all-btn">more info</a>
+        </div>
+
+        <!-- 4 Tab  -->
+
+        <!-- 5 Tab  -->
+
+        <div class="content">
+          <h1>User-Friendly Interface</h1>
+          <p>
+            Our application features a user-friendly interface designed for
+            farmers of all technological backgrounds. With simple inputs like
+            location and crop selection, users can effortlessly access detailed
+            information on crop suitability and recommended planting schedules.
+          </p>
+          <a href="#" class="all-btn">more info</a>
+        </div>
+
+        <div class="image">
+          <img
+            src="images/User-Friendly.jpeg"
+            alt="user-friendly"
+            class="rounded-corner-image"
+          />
+        </div>
+
+        <!-- 5 Tab  -->
+      </div>
+    </section>
+
+    <!-- features sectin ends -->
+
+    <!-- about section starts  -->
+
+<!-- ========================= ABOUT / TEAM SECTION ========================= -->
+<section class="about" id="about">
+  <div class="heading">
+    <h1>Our Creative Team</h1>
+    <p>
+      Meet the passionate innovators behind <strong>AgriTech Vision</strong> —
+      dedicated to transforming agriculture with smart technology.
+    </p>
+  </div>
+
+  <div class="box-container">
+    <!-- 🌿 Member 1 -->
+    <div class="box">
+      <img src="images/abhi.jpg" alt="Abhishek Kumbar" />
+      <h3>Abhishek Kumbar</h3>
+      <p>B.E | CSE <br />VTU University</p>
+      <div class="social-links">
+        <a href="https://www.instagram.com/devil_lover_666?igsh=anFycGMwemE3aGxh" target="_blank">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/abhishek-kumbar-365352270?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app " target="_blank">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://github.com/kumbarabhishek118" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- 🌿 Member 2 -->
+    <div class="box">
+      <img src="images/basamma.jpg" alt="Basamma H C" />
+      <h3>Basamma H C</h3>
+      <p>B.E | CSE <br />VTU University</p>
+      <div class="social-links">
+        <a href="#" target="_blank">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="#" target="_blank">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- 🌿 Member 3 -->
+    <div class="box">
+      <img src="images/shahi.png" alt="Shahidhar" />
+      <h3>Shahidhar </h3>
+      <p>B.E | CSE <br />VTU University</p>
+      <div class="social-links">
+        <a href="Check out Shashidhar Shashi’s profile on LinkedIn https://in.linkedin.com/in/shashidhar-shashi-3b6ba4384" target="_blank">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://www.linkedin.com/me?trk=p_mwlite_feed-secondary_nav" target="_blank">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://github.com/shashidharswamy2004-png" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- 🌿 Member 4 -->
+    <div class="box">
+      <img src="images/mahi.jpg" alt="Mahindra" />
+      <h3>Mahindra K</h3>
+      <p>B.E | CSE <br />VTU University</p>
+      <div class="social-links">
+        <a href="https://www.instagram.com/itz_mahi_777_?igsh=ZXI0eXYyczFwbGVu" target="_blank">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/mahendra-arasanalu-8045b4205?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://share.google/LwTQqYmD0x924uERg " target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+    <!-- about section ends -->
+
+    <!-- footer section starts  -->
+
+    <section class="footer" id="footer">
+      <div class="box-container">
+        <div class="box">
+          <h3>quick links</h3>
+          <a href="#home"><i class="fas fa-chevron-right"></i>home</a>
+          <a href="#features"><i class="fas fa-chevron-right"></i>features</a>
+          <a href="#about"><i class="fas fa-chevron-right"></i>about</a>
+          <a href="#home"><i class="fas fa-chevron-right"></i>chat boat</a>
+        </div>
+
+        <div class="box">
+          <h3>extra links</h3>
+          <a href="#"><i class="fas fa-chevron-right"></i>ask questions</a>
+          <a href="#"><i class="fas fa-chevron-right"></i>terms of use</a>
+          <a href="#"><i class="fas fa-chevron-right"></i>privacy policy</a>
+        </div>
+
+        <div class="box">
+          <h3>Helpful Resources</h3>
+          <a href="#"><i class="fas fa-chevron-right"></i> FAQs</a>
+          <a href="#"><i class="fas fa-chevron-right"></i> User Guides</a>
+          <a href="#"><i class="fas fa-chevron-right"></i> Support Center</a>
+        </div>
+
+        <div class="box">
+          <h3>Stay Connected</h3>
+          <a href="#"><i class="fas fa-chevron-right"></i> Future Scope</a>
+          <a href="#"><i class="fas fa-chevron-right"></i> Community Forum</a>
+          <a href="#"><i class="fas fa-chevron-right"></i> Newsletter</a>
+        </div>
+      </div>
+
+      <div class="credit">
+        © Copyright – All Rights Reserved
+        <a href="" target="_blank"><span>Team AgriTech vision</span> </a>
+      </div>
+    </section>
+
+    <!-- footer section ends -->
+      <script src="script.js"></script>
+    </chat>
+
+    <!--Chat-bot-->
+    <script src="js/main.js">
+
+    </script>
+
+  </body>
+</html>
+
+
+
+

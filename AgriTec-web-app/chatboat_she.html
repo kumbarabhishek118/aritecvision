@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AgriTec Vision — Full Portal (Schemes, Chatbot, Voice, Chart)</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+  :root{--green:#1b5e20;--accent:#43a047;--muted:#6b7280;--card:#fff;--bg:#f4faf4}
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,"Segoe UI",Roboto,Arial;margin:0;background:var(--bg);color:#072b1f}
+  header{background:linear-gradient(90deg,var(--green),#2e7d32);color:white;padding:20px 18px}
+  header h1{margin:0;font-size:1.4rem}
+  .container{max-width:1200px;margin:20px auto;padding:16px}
+  main{display:grid;grid-template-columns:1.6fr .9fr;gap:18px}
+  @media(max-width:980px){main{grid-template-columns:1fr}}
+  .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(10,30,20,0.06)}
+  .scheme{border-left:5px solid var(--green);padding:12px;margin-bottom:12px;border-radius:8px;background:#fff}
+  .scheme h3{margin:0 0 6px;color:var(--green);cursor:pointer}
+  .meta{color:var(--muted);font-size:0.95rem}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  button.btn{background:var(--accent);color:white;padding:8px 12px;border:none;border-radius:8px;cursor:pointer}
+  a.link{color:var(--green);font-weight:600;text-decoration:none}
+  .details{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed #eef6ee}
+  .step{background:#f7fff7;padding:10px;border-radius:8px;margin-bottom:8px}
+  .label{font-weight:700;color:#184d35}
+  /* Right column */
+  .right-col{display:flex;flex-direction:column;gap:12px}
+  .chart-wrap{text-align:center;padding:8px}
+  canvas{background:#fff;border-radius:8px;padding:8px;max-width:100%}
+  /* Chatbot */
+  .chatbot{display:flex;flex-direction:column;height:520px}
+  .chat-log{flex:1;overflow:auto;padding:10px;background:#fbfffb;border-radius:8px;border:1px solid #eef7ef}
+  .msg{margin:8px 0;padding:8px 10px;border-radius:10px;max-width:80%}
+  .msg.user{background:#e6f4ea;margin-left:auto}
+  .msg.bot{background:#eef7f0;margin-right:auto}
+  .chat-controls{display:flex;gap:8px;margin-top:8px;align-items:center}
+  input[type="text"],select{padding:8px;border-radius:8px;border:1px solid #e5e7eb;width:100%}
+  #mic{background:#4caf50;border:none;color:white;padding:8px;border-radius:50%;cursor:pointer}
+  footer{margin-top:18px;text-align:center;color:var(--muted);padding:10px}
+  .project-card{background:linear-gradient(180deg,#f1fff1,#ffffff);border-left:6px solid var(--green);padding:12px;border-radius:8px}
+  .lang-toggle{display:flex;gap:8px;align-items:center}
+  .kbd{font-family:monospace;background:#f3f4f6;padding:2px 6px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>AgriTec Vision — Central & State Agriculture Schemes</h1>
+
+  </div>
+</header>
+
+<div class="container">
+  <main>
+    <!-- Left: Schemes -->
+    <section>
+      <div class="card">
+        <h2 style="margin-top:0">Central Government Schemes (Major)</h2>
+
+        <!-- We'll include many schemes. Each article has English + Kannada details in dataset below -->
+        <!-- Schemes are rendered by JS from a local data array for maintainability -->
+        <div id="schemesContainer"></div>
+
+        <hr />
+        <h2 style="margin-top:10px">State Schemes (Representative)</h2>
+        <div id="stateSchemesContainer"></div>
+
+        <hr />
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="project-card" style="flex:1">
+            <strong>AgriTec Vision — Project</strong>
+            <p style="margin:6px 0 0;color:var(--muted)">Static demo with offline chatbot & voice. To keep live, connect a backend and update the local data file.</p>
+          </div>
+          <button class="btn" id="refreshCounts">Update Chart</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Right: Chart + Chatbot -->
+    <aside class="right-col">
+
+      <div class="card chart-wrap">
+        <h3 style="margin-top:0">Schemes Overview</h3>
+        <canvas id="overviewChart" width="360" height="260"></canvas>
+        <div style="font-size:0.9rem;color:var(--muted);margin-top:8px">Counts by category. Click <span class="kbd">Update Chart</span> after changes.</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px">Multilingual Chatbot (Offline)</h3>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px" class="lang-toggle">
+          <label for="botLang">Language:</label>
+          <select id="botLang" aria-label="Language">
+            <option value="en" selected>English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+          </select>
+          <div style="margin-left:auto;color:var(--muted);font-size:0.9rem">Voice: speech recognition & TTS</div>
+        </div>
+
+        <div class="chatbot card" style="padding:10px">
+          <div id="chatLog" class="chat-log"></div>
+          <div class="chat-controls">
+            <button id="mic">🎤</button>
+            <input type="text" id="userMsg" placeholder="Type or speak your question about schemes..." />
+            <button id="send">Send</button>
+          </div>
+          <div style="margin-top:8px;color:var(--muted);font-size:0.9rem">
+            Tip: click any scheme title to ask the bot about it automatically.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin:0 0 8px">Quick Links</h4>
+        <ul style="margin:0;padding-left:18px;color:var(--muted)">
+          <li><a class="link" href="https://pmkisan.gov.in/" target="_blank">PM-KISAN</a></li>
+          <li><a class="link" href="https://pmfby.gov.in/" target="_blank">PMFBY</a></li>
+          <li><a class="link" href="https://soilhealth.dac.gov.in/" target="_blank">Soil Health Card</a></li>
+          <li><a class="link" href="https://enam.gov.in/web/" target="_blank">e-NAM</a></li>
+        </ul>
+      </div>
+
+    </aside>
+  </main>
+
+  <footer>© AgriTec Vision • Demo. For production, keep data updated with official sources.</footer>
+</div>
+
+<script>
+/* ======================================================
+   Data: Central and State schemes (English + Kannada)
+   You can extend this array or load from json file.
+   ====================================================== */
+const CENTRAL_SCHEMES = [
+  {
+    id: 'pmkisan',
+    name: 'PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)',
+    en: {
+      short: 'Direct income support — ₹6,000 per year (3 installments).',
+      how: 'Visit the PM-KISAN portal → Farmers Corner → New Farmer Registration. Fill Aadhaar & bank details.',
+      docs: ['Aadhaar card','Bank passbook (first page)','Land records (if requested)'],
+      link: 'https://pmkisan.gov.in/'
+    },
+    kn: {
+      short: 'ನೇರ ಆದಾಯ ಸಹಾಯ — ವರ್ಷಕ್ಕೆ ₹6,000 (3 ಹಂತಗಳಲ್ಲಿ).',
+      how: 'PM-KISAN ಪೋರ್ಟಲ್ → Farmers Corner → New Farmer Registration ನಲ್ಲಿ ನೋಂದಣಿ ಮಾಡಿ. ಆಧಾರ್ ಮತ್ತು ಬ್ಯಾಂಕ್ ವಿವರ ಹಾಕಿ.',
+      docs: ['ಆಧಾರ್ ಕಾರ್ಡ್','ಬ್ಯಾಂಕ್ ಪಾಸ್‌ಬುಕ್ (ಮுதல் ಪುಟ)','ಭೂ ದಾಖಲೆ (ಅಗತ್ಯವಿದ್ದಲ್ಲಿ)'],
+      link: 'https://pmkisan.gov.in/'
+    }
+  },
+  {
+    id: 'pmfby',
+    name: 'PMFBY (Pradhan Mantri Fasal Bima Yojana)',
+    en: {
+      short: 'Crop insurance to protect against natural calamities, pests & diseases.',
+      how: 'Enroll via local agriculture office, bank, or authorised vendor during enrollment period.',
+      docs: ['Farmer ID / Aadhaar','Bank account','Crop & land details'],
+      link: 'https://pmfby.gov.in/'
+    },
+    kn: {
+      short: 'ಪ್ರಾಕೃತಿಕ ವಿಪತ್ತು, ಕೀಟ ಅಥವಾ ರೋಗಗಳಿಂದ ರಕ್ಷಿಸಲು ಬೆಳೆ ವಿಮೆ.',
+      how: 'ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕೃಷಿ ಕಚೇರಿ ಅಥವಾ ಬ್ಯಾಂಕಿನ ಮೂಲಕ ದಾಖಲಾತಿ ಮಾಡಿ.',
+      docs: ['ರೈತ ID / ಆಧಾರ್','ಬ್ಯಾಂಕ್ ಖಾತೆ','ಬೆಳೆ ಮತ್ತು ಭೂ ಮಾಹಿತಿ'],
+      link: 'https://pmfby.gov.in/'
+    }
+  },
+  {
+    id: 'pmksy',
+    name: 'PMKSY (Pradhan Mantri Krishi Sinchai Yojana)',
+    en: {
+      short: 'Irrigation coverage & water-use efficiency program.',
+      how: 'Contact state PMKSY implementing agency / district irrigation office for scheme-specific forms.',
+      docs: ['Land records','Scheme specific documents'],
+      link: 'https://pmksy.gov.in/'
+    },
+    kn: {
+      short: 'ನೀರು ವ್ಯಯದ ಪರಿಣಾಮಕಾರಿತ್ವ ಹಾಗೂ ನೀರಾವರಿ ವಿಸ್ತರಣೆ ಯೋಜನೆ.',
+      how: 'ರಾಜ್ಯ PMKSY ಜಾರಿಗಾರರriques / ಜಿಲ್ಲೆ ನೀರಾವರಿ ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.',
+      docs: ['ಭೂ ದಾಖಲೆ','ಯೋಜನೆದಾಖಲೆಗಳು'],
+      link: 'https://pmksy.gov.in/'
+    }
+  },
+  {
+    id: 'soilhealth',
+    name: 'Soil Health Card Scheme',
+    en: {
+      short: 'Soil testing & nutrient recommendations for improved yields.',
+      how: 'Collect soil samples per local guidelines and submit at Soil Testing Lab; get SHC with recommendations.',
+      docs: ['Sample forms','Farmer ID / land details as required'],
+      link: 'https://soilhealth.dac.gov.in/'
+    },
+    kn: {
+      short: 'ಮಣ್ಣು ಪರೀಕ್ಷೆ ಮತ್ತು ಪೋಷಕಾಂಶ ಶಿಫಾರಸ್ಸುಗಳು.',
+      how: 'ಮಣ್ಣಿನ ಮಾದರಿಗಳನ್ನು ಸಂಗ್ರಹಿಸಿ ಸ್ಥಳೀಯ ಪರೀಕ್ಷಾ ಕೇಂದ್ರದಲ್ಲಿ ಸಲ್ಲಿಸಿ; SHC ಪಡೆಯಿರಿ.',
+      docs: ['ಸ್ಯಾಂಪಲ್ ಫಾರಂ','ರೈತ ID / ಭೂ ವಿವರ'],
+      link: 'https://soilhealth.dac.gov.in/'
+    }
+  },
+  {
+    id: 'enam',
+    name: 'e-NAM (National Agriculture Market)',
+    en: {
+      short: 'Online trading platform connecting mandis to improve price realization.',
+      how: 'Register as farmer/trader on e-NAM via your mandi or the portal.',
+      docs: ['Identity','Bank details','Mandi registration documents'],
+      link: 'https://enam.gov.in/web/'
+    },
+    kn: {
+      short: 'ಮಂಡಿಗಳನ್ನು ಆನ್ಲೈನ್ ಮೂಲಕ ಸಂಪರ್ಕಿಸುವ ಕೃಷಿ ಮಾರುಕಟ್ಟೆ.',
+      how: 'e-NAM ನಲ್ಲಿ ರೈತವಾಗಿ ಅಥವಾ ವ್ಯಾಪಾರಿ ಆಗಿ ನೋಂದಣಿ ಮಾಡಿ (ಮಂಡಿ ಮೂಲಕ ಸಹ ಖಾತೆ ಸಿದ್ಧಪಡಿಸಬಹುದು).',
+      docs: ['ಅಡ_pd', 'ಬ್ಯಾಂಕ್ ವಿವರ','ಮಂಡಿ ದಾಖಲೆಗಳು'],
+      link: 'https://enam.gov.in/web/'
+    }
+  },
+  {
+    id: 'kcc',
+    name: 'Kisan Credit Card (KCC)',
+    en: {
+      short: 'Short-term credit to farmers for cultivation and allied activities.',
+      how: 'Apply at your bank branch or via farmer-friendly portals; submit KCC application form and docs.',
+      docs: ['Identity','Farm records','Income proof','Land documents (if needed)'],
+      link: 'https://www.mygov.in/kisancreditcard/'
+    },
+    kn: {
+      short: 'ಕೃಷಿ ಮತ್ತು ಸಂಬಂಧಿತ ಚಟುವಟಿಕೆಗಳಿಗೆ ತಾತ್ಕಾಲಿಕ ಸಾಲ.',
+      how: 'ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ಶಾಖೆಗೆ ಹೋಗಿ ಅಥವಾ ಆನ್‌ಲೈನ್ ಮೂಲಕ ಮಾಹಿತಿ ಜಮಾ ಮಾಡಿ.',
+      docs: ['ಗುರುತು ಪಡಿಸುವ ದಾಖಲೆ',' фер್ಮ್ ದಾಖಲೆ','ಆದಾಯದ ದಾಖಲೆ','ಭೂ ದಾಖಲೆಗಳು'],
+      link: 'https://www.mygov.in/kisancreditcard/'
+    }
+  },
+
+  // Add a few more central schemes compactly
+  {
+    id: 'pmasha',
+    name: 'PM-AASHA / Price Support Measures',
+    en: { short:'Market intervention & MSP-related measures.', how:'Follow Ministry notifications and state procurement details.', docs:[], link:'https://dac.gov.in/' },
+    kn: { short:'ಮಾರ್ಕೆಟ್ ಹಸ್ತಕ್ಷೇಪ ಮತ್ತು MSP ಸಂಬಂಧಿತ ಕ್ರಮಗಳು.', how:'ಕೃಷಿ ಸಚಿವಾಲಯದ ಅಧಿಸೂಚನೆಗಳನ್ನನುಸರಿಸಿ.', docs:[], link:'https://dac.gov.in/' }
+  },
+  {
+    id: 'nmsa',
+    name: 'NMSA (National Mission for Sustainable Agriculture)',
+    en: { short:'Promote sustainable agriculture practices in rainfed areas.', how:'Contact district mission office for programs.', docs:[], link:'https://nmsa.dac.gov.in/' },
+    kn: { short:'ವರ್ಷಾಬೇಸಿಗ್ರಹಣ ಪ್ರದೇಶಗಳಲ್ಲಿ ಸಸ್ಥಿರ ಕೃಷಿ ಪ್ರಚಾರ.', how:'ಜಿಲ್ಲಾ ಮಿಷನ್ ಕಚೇರಿಯೊಂದಿಗೆ ಸಂಪರ್ಕಿಸಿರಿ.', docs:[], link:'https://nmsa.dac.gov.in/' }
+  },
+  {
+    id: 'midha',
+    name: 'MIDH (Mission for Integrated Development of Horticulture)',
+    en: { short:'Support for horticulture development, processing & marketing.', how:'State horticulture departments manage schemes and applications.', docs:[], link:'https://hortnet.gov.in/' },
+    kn: { short:'ಹಾರ್ಟಿಕಲ್ಚರ್ ಅಭಿವೃದ್ಧಿ ಮತ್ತು ಮಾರ್ಕೆಟಿಂಗ್ ಬೆಂಬಲ.', how:'ರಾಜ್ಯದ ಹಾರ್ಟಿಕಲ್ಚರ್ ಇಲಾಖೆಗೆ ಸಂಪರ್ಕಿಸಿ.', docs:[], link:'https://hortnet.gov.in/' }
+  }
+];
+
+const STATE_SCHEMES = [
+  {
+    id: 'rythubandhu',
+    name: 'Rythu Bandhu (Telangana)',
+    en: { short:'Investment support: ₹5,000 per acre per season.', how:'Based on land records; contact revenue/agriculture office.', docs:['RTC / 1B','Bank details'], link:'https://rythubandhu.telangana.gov.in/' },
+    kn: { short:'ಪ್ರತಿ ಸೀಸನ್‌ಗೆ ಪ್ರತಿ ಎಕರೆಗೆ ₹5,000 ಸಹಾಯ.', how:'ಭೂ ದಾಖಲೆಗಳ ಆಧಾರದ ಮೇಲೆ ಸೇರಿಸಲಾಗುತ್ತದೆ; ಜಿಲ್ಲಾ ಕಚೇರಿಗೆ ಸಂಪರ್ಕಿಸಿ.', docs:['ಭೂ ದಾಖಲೆ','ಬ್ಯಾಂಕ್ ಮಾಹಿತಿ'], link:'https://rythubandhu.telangana.gov.in/' }
+  },
+  {
+    id: 'raithasiri',
+    name: 'Raitha Siri / Raitha Bandhu (Karnataka variants)',
+    en: { short:'Support packages & input subsidies for farmers.', how:'Apply via RSK / district agriculture offices or portals.', docs:['Aadhaar','land records','bank passbook'], link:'https://raitamitra.karnataka.gov.in/' },
+    kn: { short:'ರೈತರಿಗೆ ಸಹಾಯಕ ಪ್ಯಾಕೇಜುಗಳು ಮತ್ತು ಸಬ್ಸಿಡಿಗಳು.', how:'ಸ್ಥಳೀಯ RSK / ಕೃಷಿ ಕಚೇರಿಗೆ ಸಂಬಂಧಿಸಿ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ.', docs:['ಆಧಾರ್','ಭೂ ದಾಖಲೆ','ಬ್ಯಾಂಕ್ ಪೇಜ್'], link:'https://raitamitra.karnataka.gov.in/' }
+  },
+  {
+    id: 'mahadbt',
+    name: 'MahaDBT (Maharashtra portal)',
+    en: { short:'One portal for state subsidies & farmer schemes.', how:'Register on MahaDBT with Aadhaar & bank details and apply.', docs:['Aadhaar','bank','scheme-specific docs'], link:'https://mahadbt.maharashtra.gov.in/' },
+    kn: { short:'ರಾಜ್ಯದ ಸಬ್ಸಿಡಿ ಯೋಜನೆಗಳ ಪೋರ್ಟಲ್.', how:'MahaDBT ನಲ್ಲಿ ನೋಂದಣಿ ಮಾಡಿ; ಅರ್ಜಿ ಸಲ್ಲಿಸಿ.', docs:['ಆಧಾರ್','ಬ್ಯಾಂಕ್','ಯೋಜನೆ ದಾಖಲೆಗಳು'], link:'https://mahadbt.maharashtra.gov.in/' }
+  },
+  {
+    id: 'kalia',
+    name: 'KALIA (Odisha)',
+    en: { short:'Support for small & marginal farmers and landless households.', how:'Visit KALIA portal or local agriculture office to check eligibility & apply.', docs:['Aadhaar','bank details','family/land records'], link:'https://kalia.odisha.gov.in/' },
+    kn: { short:'ಸಣ್ಣ ಮತ್ತು ಅಲ್ಪ ರೈತರಿಗೆ ಸಹಾಯ.', how:'KALIA ಪೋರ್ಟಲ್ ಅಥವಾ ಸ್ಥಳೀಯ ಕೃಷಿ ಕಚೇರಿಯೊಂದಿಗೆ ಸಂಪರ್ಕಿಸಿ.', docs:['ಆಧಾರ್','ಬ್ಯಾಂಕ್','ಭೂ/ಕುಟುಂಬ ದಾಖಲೆ'], link:'https://kalia.odisha.gov.in/' }
+  }
+];
+
+
+/* ======================================================
+   Render schemes in DOM (left column)
+   ====================================================== */
+function renderSchemes(){
+  const container = document.getElementById('schemesContainer');
+  container.innerHTML = '';
+  CENTRAL_SCHEMES.forEach(s => {
+    const art = document.createElement('article');
+    art.className = 'scheme';
+    art.id = s.id;
+    art.innerHTML = `
+      <h3 data-id="${s.id}">${escapeHtml(s.name)}</h3>
+      <div class="meta">${escapeHtml(s.en.short)}</div>
+      <div class="row">
+        <a class="link" href="${s.en.link}" target="_blank" rel="noopener">Official portal</a>
+        <button class="btn" data-target="${s.id}-details">Details</button>
+      </div>
+      <div class="details" id="${s.id}-details"></div>
+    `;
+    container.appendChild(art);
+
+    // fill details container (both languages)
+    const det = art.querySelector('.details');
+    det.innerHTML = `
+      <div class="step"><div class="label">How to apply (EN)</div><div>${escapeHtml(s.en.how)}</div></div>
+      <div class="step"><div class="label">How to apply (KN)</div><div>${escapeHtml(s.kn.how)}</div></div>
+      <div class="step"><div class="label">Required documents</div><ul>${(s.en.docs||[]).map(d=>`<li>${escapeHtml(d)}</li>`).join('')}</ul></div>
+      <div class="step"><a class="link" href="${s.en.link}" target="_blank">Open official page</a></div>
+    `;
+  });
+
+  // state schemes
+  const stateContainer = document.getElementById('stateSchemesContainer');
+  stateContainer.innerHTML = '';
+  STATE_SCHEMES.forEach(s => {
+    const art = document.createElement('article');
+    art.className = 'scheme';
+    art.id = s.id;
+    art.innerHTML = `
+      <h3 data-id="${s.id}">${escapeHtml(s.name)}</h3>
+      <div class="meta">${escapeHtml(s.en.short)}</div>
+      <div class="row">
+        <a class="link" href="${s.en.link}" target="_blank" rel="noopener">Official portal</a>
+        <button class="btn" data-target="${s.id}-details">Details</button>
+      </div>
+      <div class="details" id="${s.id}-details"></div>
+    `;
+    stateContainer.appendChild(art);
+
+    const det = art.querySelector('.details');
+    det.innerHTML = `
+      <div class="step"><div class="label">How to apply (EN)</div><div>${escapeHtml(s.en.how)}</div></div>
+      <div class="step"><div class="label">How to apply (KN)</div><div>${escapeHtml(s.kn.how)}</div></div>
+      <div class="step"><div class="label">Required documents</div><ul>${(s.en.docs||[]).map(d=>`<li>${escapeHtml(d)}</li>`).join('')}</ul></div>
+      <div class="step"><a class="link" href="${s.en.link}" target="_blank">Open official page</a></div>
+    `;
+  });
+
+  // wire up details toggle and clicking titles to ask bot
+  document.querySelectorAll('button[data-target]').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const id = btn.getAttribute('data-target'), el = document.getElementById(id);
+      if(!el) return;
+      // close others
+      document.querySelectorAll('.details').forEach(d=>{ if(d!==el) d.style.display='none' });
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+      if(el.style.display === 'block') el.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+  });
+  // clicking scheme title asks bot
+  document.querySelectorAll('.scheme h3').forEach(h=>{
+    h.addEventListener('click', ()=> {
+      const id = h.getAttribute('data-id');
+      if(id) handleUserMessage(id);
+    });
+  });
+}
+
+/* ======================================================
+   Chart: overview
+   ====================================================== */
+function countSchemes(){
+  const central = CENTRAL_SCHEMES.length;
+  const state = STATE_SCHEMES.length;
+  const other = 0;
+  return {central, state, other, total: central+state+other};
+}
+
+const ctx = document.getElementById('overviewChart').getContext('2d');
+let overviewChart = new Chart(ctx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Central','State','Other'],
+    datasets: [{ data: [0,0,0], backgroundColor: ['#66bb6a','#4db6ac','#a5d6a7'] }]
+  },
+  options: { plugins:{legend:{position:'bottom'}} }
+});
+
+function updateChart(){
+  const c = countSchemes();
+  overviewChart.data.datasets[0].data = [c.central, c.state, c.other];
+  overviewChart.update();
+}
+document.getElementById('refreshCounts').addEventListener('click', ()=>{ updateChart() });
+/* ======================================================
+   Chatbot: offline canned answers and multilingual voice
+   ====================================================== */
+const chatLog = document.getElementById('chatLog');
+const userMsg = document.getElementById('userMsg');
+const sendBtn = document.getElementById('send');
+const micBtn = document.getElementById('mic');
+const botLang = document.getElementById('botLang');
+
+// Build canned responses from data in three languages
+const canned = { en: {}, hi: {}, kn: {} };
+
+// Populate canned with scheme-based keys
+function populateCanned(){
+  const add = (lang, key, text) => { canned[lang][key] = text; };
+  // central
+  CENTRAL_SCHEMES.forEach(s=>{
+    const key = s.id.toLowerCase();
+    add('en', key, `${s.name}: ${s.en.short} How to apply: ${s.en.how} Official: ${s.en.link}`);
+    add('kn', key, `${s.name} — ${s.kn.short} ಅಪ್ಲೈ ಮಾಡಲು: ${s.kn.how} ಅಧಿಕೃತ: ${s.kn.link}`);
+    // a Hindi fallback could use English for now
+    add('hi', key, `${s.name}: ${s.en.short} (visit ${s.en.link})`);
+  });
+  // state
+  STATE_SCHEMES.forEach(s=>{
+    const key = s.id.toLowerCase();
+    add('en', key, `${s.name}: ${s.en.short} How to apply: ${s.en.how} Official: ${s.en.link}`);
+    add('kn', key, `${s.name} — ${s.kn.short} ಅಪ್ಲೈ ಮಾಡಲು: ${s.kn.how} ಅಧಿಕೃತ: ${s.kn.link}`);
+    add('hi', key, `${s.name}: ${s.en.short} (visit ${s.en.link})`);
+  });
+  // general keys
+  add('en','pmkisan','PM-KISAN gives ₹6,000 per year to eligible farmer families. Apply at pmkisan.gov.in (Farmers Corner).');
+  add('kn','pmkisan','PM-KISAN ಯೋಜನೆ ಅಡಿಯಲ್ಲಿ ಅರ್ಹ ರೈತರಿಗೆ ವರ್ಷಕ್ಕೆ ₹6,000 ಸಿಗುತ್ತದೆ. ಅರ್ಜಿ: pmkisan.gov.in.');
+  add('hi','pmkisan','PM-KISAN योजना के तहत पात्र किसानों को ₹6,000 प्रति वर्ष मिलते हैं। pmkisan.gov.in देखें।');
+
+  add('en','pmfby','PMFBY is crop insurance that protects your crops from natural calamities and pests.');
+  add('kn','pmfby','PMFBY ಒಂದು ಬೆಳೆ ವಿಮೆ ಯೋಜನೆ — ನಷ್ಟದ ವಿರುದ್ಧ ರಕ್ಷಿಸುತ್ತದೆ.');
+  add('hi','pmfby','PMFBY फसल बीमा है जो फसल के नुकसान से सुरक्षा देता है।');
+
+  add('en','kcc','KCC (Kisan Credit Card) provides timely credit. Apply via your bank.');
+  add('kn','kcc','KCC ರೈತ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ — ನಿಮ್ಮ ಬ್ಯಾಂಕ್ ನಲ್ಲಿ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ.');
+  add('hi','kcc','KCC के लिए अपने बैंक से संपर्क करें।');
+
+  add('en','hello','Hello! Ask me about any scheme listed on the left (e.g., PM-KISAN, PMFBY, Rythu Bandhu).');
+  add('kn','hello','ನಮಸ್ಕಾರ! ಎಡಭಾಗದಲ್ಲಿರುವ ಯೋಜನೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ (ಉದಾ: PM-KISAN, PMFBY, Rythu Bandhu).');
+  add('hi','hello','नमस्ते! बाईं ओर सूचीबद्ध योजनाओं के बारे में पूछें।');
+}
+populateCanned();
+
+// Utility: append message to chat log
+function appendMessage(who, text){
+  const d = document.createElement('div');
+  d.className = 'msg ' + (who === 'user' ? 'user' : 'bot');
+  d.textContent = text;
+  chatLog.appendChild(d);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+// TTS: speak text in selected language
+function speak(text, lang){
+  if(!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  const map = { en: 'en-IN', hi: 'hi-IN', kn: 'kn-IN' };
+  u.lang = map[lang] || 'en-IN';
+  u.rate = 1;
+  u.pitch = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+// Optionally call backend API (disabled by default)
+async function callBackendAPI(message, lang){
+  // if you later host a backend, put URL here
+  const BACKEND_URL = ''; // e.g. 'https://your-backend.example.com/chat'
+  if(!BACKEND_URL) return null;
+  try{
+    const res = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ message, lang })
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    return data.reply || null;
+  }catch(e){
+    console.warn('API call error', e);
+    return null;
+  }
+}
+
+// Handle user message (text or scheme id)
+async function handleUserMessage(rawText){
+  // if rawText is an id of scheme, use it
+  let text = rawText || '';
+  const lang = botLang.value || 'en';
+  if(!text) return;
+  appendMessage('user', text);
+  // find keyword; prefer exact id match
+  let reply = null;
+  const key = (text || '').toString().toLowerCase().trim();
+
+  // If matches an id directly
+  if(canned[lang] && canned[lang][key]) reply = canned[lang][key];
+
+  // Otherwise find if text contains any known id/name
+  if(!reply){
+    // check scheme ids and names
+    const all = CENTRAL_SCHEMES.concat(STATE_SCHEMES);
+    for(const s of all){
+      if(key.includes(s.id) || key.includes(s.name.toLowerCase()) ){
+        // prefer requested language mapping
+        reply = (canned[lang] && canned[lang][s.id]) || (canned['en'] && canned['en'][s.id]);
+        break;
+      }
+    }
+  }
+
+  // if still not found, check keywords (pmkisan, pmfby, kcc)
+  if(!reply){
+    const kwords = ['pmkisan','pm-kisan','pmfby','kcc','rythu','rythu bandhu','rythubandhu','soil','enam'];
+    for(const kw of kwords){
+      if(key.includes(kw)){
+        reply = canned[lang][kw.replace('-','')] || canned['en'][kw.replace('-','')] || null;
+        break;
+      }
+    }
+  }
+
+  // try backend if toggled (apiToggle controlled by button)
+  const apiToggle = document.getElementById('apiToggle');
+  if(!reply && apiToggle && apiToggle.classList.contains('active')){
+    const apiReply = await callBackendAPI(text, lang);
+    if(apiReply) reply = apiReply;
+  }
+
+  // fallback
+  if(!reply){
+    reply = canned[lang]['hello'] || canned['en']['hello'];
+  }
+
+  appendMessage('bot', reply);
+  speak(reply, lang);
+}
+
+// Wire send button & enter key
+sendBtn.addEventListener('click', ()=>{
+  const t = userMsg.value.trim();
+  if(!t) return;
+  userMsg.value = '';
+  handleUserMessage(t);
+});
+userMsg.addEventListener('keypress', e=>{ if(e.key === 'Enter') sendBtn.click(); });
+
+// Speech recognition (Mic)
+let recognition = null;
+if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.interimResults = false;
+  recognition.onresult = (e)=>{
+    const spoken = Array.from(e.results).map(r=>r[0].transcript).join('');
+    userMsg.value = spoken;
+    handleUserMessage(spoken);
+  };
+  recognition.onend = ()=> { micBtn.style.opacity = '1'; }
+} else {
+  micBtn.disabled = true;
+  micBtn.title = 'Speech recognition not supported (use Chrome/Edge)';
+}
+
+micBtn.addEventListener('click', ()=>{
+  if(!recognition) return alert('Speech recognition unavailable. Use Chrome/Edge.');
+  const lang = botLang.value || 'en';
+  recognition.lang = (lang === 'kn') ? 'kn-IN' : (lang === 'hi' ? 'hi-IN' : 'en-IN');
+  micBtn.style.opacity = '0.6';
+  recognition.start();
+});
+
+/* ======================================================
+   Small helper and initialization
+   ====================================================== */
+function escapeHtml(s){ return (s||'').toString()
+  .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+function init(){
+  renderSchemes();
+  updateChart();
+  // initial greeting
+  const initLang = botLang.value || 'en';
+  const greet = canned[initLang] ? (canned[initLang]['hello'] || canned['en']['hello']) : canned['en']['hello'];
+  appendMessage('bot', greet);
+  speak(greet, initLang);
+}
+init();
+const responses = {
+  "pm-kisan": "PM-KISAN provides ₹6,000/year directly to farmers.",
+  "pmfby": "Pradhan Mantri Fasal Bima Yojana gives crop insurance for farmers.",
+  "rythu bandhu": "Rythu Bandhu gives ₹5,000 per acre per season in Telangana.",
+};
+
+
+/* allow clicking scheme titles to ask bot - already wired in renderSchemes */
+</script>
+</body>
+</html>

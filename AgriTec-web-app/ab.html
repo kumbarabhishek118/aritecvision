@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Fertilizer Recommendations — AgriAssist</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eefaf0; --card:#ffffff; --muted:#6b7a6f;
+    --accent:#2f9e44; --accent-2:#86c88b; --glass:rgba(255,255,255,0.6);
+    --danger:#d9534f;
+    --shadow: 0 8px 30px rgba(43, 82, 47, 0.08);
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#0e2b14}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#e9f6ea 0%, #d9f0dd 100%);padding:20px}
+  .wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 380px;gap:20px}
+  @media (max-width:980px){ .wrap{grid-template-columns:1fr; padding:10px} .right{order:2} }
+
+  /* Header */
+  header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .logo{width:54px;height:54px;border-radius:10px;background:linear-gradient(180deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:0 6px 18px rgba(47,158,68,0.18)}
+  .title{font-size:20px;font-weight:700}
+  .subtitle{font-size:13px;color:var(--muted);margin-top:4px}
+
+  /* Left: form and chat */
+  .panel{background:var(--card);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+  .section-title{font-weight:700;margin-bottom:10px}
+  form .row{display:flex;gap:10px;margin-bottom:10px}
+  .col{flex:1}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  select,input[type="number"],input[type="text"],textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6efe6;background:transparent;outline:none}
+  .btn{background:var(--accent);color:white;padding:10px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:600}
+  .btn.secondary{background:transparent;border:1px solid #e6efe6;color:var(--accent);}
+
+  /* Chat */
+  .chatWindow{height:360px;overflow:auto;border-radius:10px;padding:12px;background:linear-gradient(180deg, rgba(47,158,68,0.03), rgba(0,0,0,0.01));border:1px dashed rgba(47,158,68,0.06)}
+  .msg{margin-bottom:10px;display:flex}
+  .msg.user{justify-content:flex-end}
+  .bubble{max-width:78%;padding:10px 12px;border-radius:10px;font-size:14px}
+  .bubble.assistant{background:#f6fff6;border:1px solid rgba(47,158,68,0.06)}
+  .bubble.user{background:linear-gradient(90deg,#2f9e44,#1f7a34);color:white}
+
+  .composer{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .input{flex:1;display:flex;gap:8px}
+  .input input{flex:1;padding:10px;border-radius:10px;border:1px solid #e6efe6}
+  .micBtn{padding:10px;border-radius:10px;border:1px solid rgba(14,43,20,0.06);background:white;cursor:pointer}
+
+  /* Right dashboard */
+  .right .card{margin-bottom:12px}
+  .recCard{display:flex;gap:12px;align-items:center}
+  .nutri{width:74px;height:74px;border-radius:10px;background:linear-gradient(180deg,var(--accent-2),var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px}
+  .recInfo{flex:1}
+  .small{font-size:13px;color:var(--muted)}
+  .pill{display:inline-block;padding:6px 8px;border-radius:8px;background:linear-gradient(180deg,#f0fff0,#eaffea);font-weight:600;margin-top:8px}
+
+  footer{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+  .hint{font-size:13px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Ag</div>
+  <div>
+    <div class="title">AgriAssist — Fertilizer Recommendations</div>
+
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Left column: Form + Chat -->
+  <div>
+    <div class="panel">
+      <div class="section-title">Fertilizer Recommendation Form</div>
+      <form id="recForm">
+        <div class="row">
+          <div class="col">
+            <label for="crop">Crop</label>
+            <select id="crop" required>
+              <option value="maize">Maize / Corn</option>
+              <option value="wheat">Wheat</option>
+              <option value="rice">Rice</option>
+              <option value="cotton">Cotton</option>
+              <option value="sugarcane">Sugarcane</option>
+              <option value="soybean">Soybean</option>
+              <option value="tomato">Tomato</option>
+              <option value="potato">Potato</option>
+              <option value="groundnut">Groundnut</option>
+            </select>
+          </div>
+          <div class="col">
+            <label for="soil">Soil type</label>
+            <select id="soil">
+              <option value="loam">Loam</option>
+              <option value="clay">Clay</option>
+              <option value="sandy">Sandy</option>
+              <option value="silt">Silt</option>
+              <option value="peat">Peat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label for="ph">Soil pH (approx)</label>
+            <input id="ph" type="number" min="3" max="10" step="0.1" value="6.5">
+          </div>
+          <div class="col">
+            <label for="area">Field area (hectares)</label>
+            <input id="area" type="number" min="0.01" step="0.01" value="1">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label for="target">Yield target / comment</label>
+            <input id="target" type="text" placeholder="e.g., good yield, high protein" />
+          </div>
+          <div class="col">
+            <label for="organic">Organic matter?</label>
+            <select id="organic">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button type="submit" class="btn">Get Recommendation</button>
+          <button type="button" id="saveBtn" class="btn secondary">Save Locally</button>
+          <button type="button" id="clearBtn" class="btn secondary" style="color:var(--danger);border-color:rgba(217,83,79,0.08)">Clear</button>
+        </div>
+      </form>
+
+      <div class="hint">Tip: Use the chatbot below to ask plain-language questions like "What fertilizer for maize on clay soil?"</div>
+    </div>
+
+    <!-- Chat assistant -->
+    <div class="panel" style="margin-top:14px">
+      <div class="section-title">Chat Assistant</div>
+      <div class="chatWindow" id="chatWindow" role="log" aria-live="polite">
+        <!-- messages -->
+      </div>
+
+      <div class="composer" style="margin-top:12px">
+        <div class="input">
+          <input id="chatInput" type="text" placeholder="Type a question (or speak)..." />
+          <button id="sendChat" class="btn secondary">Send</button>
+        </div>
+        <button id="micChat" class="micBtn" title="Use voice">🎤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column: Dashboard -->
+  <div class="right">
+    <div class="panel card">
+      <div class="section-title">Recommendation Summary</div>
+      <div id="summaryArea" style="margin-top:10px">
+        <div class="small">No recommendation yet.</div>
+      </div>
+      <div style="margin-top:12px" id="npkBoxes"></div>
+    </div>
+
+    <div class="panel card">
+      <div class="section-title">Suggested Fertilizers & Tips</div>
+      <div id="fertList" style="margin-top:10px">
+        <div class="small">Results will appear here.</div>
+      </div>
+    </div>
+
+    <div class="panel card">
+      <div class="section-title">Saved Recommendations</div>
+      <div id="savedList" style="margin-top:10px">
+        <div class="small">No saved records.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="small">Offline simulator • Not a substitute for lab soil analysis. Use as quick guidance only.</div>
+</footer>
+
+<script>
+/* -------------------------
+   Local helper logic
+   ------------------------- */
+
+// Elements
+const recForm = document.getElementById('recForm');
+const cropEl = document.getElementById('crop');
+const soilEl = document.getElementById('soil');
+const phEl = document.getElementById('ph');
+const areaEl = document.getElementById('area');
+const organicEl = document.getElementById('organic');
+const targetEl = document.getElementById('target');
+const summaryArea = document.getElementById('summaryArea');
+const npkBoxes = document.getElementById('npkBoxes');
+const fertList = document.getElementById('fertList');
+const savedList = document.getElementById('savedList');
+const saveBtn = document.getElementById('saveBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+// Chat
+const chatWindow = document.getElementById('chatWindow');
+const chatInput = document.getElementById('chatInput');
+const sendChat = document.getElementById('sendChat');
+const micChat = document.getElementById('micChat');
+
+// storage key
+const STORAGE_KEY = 'agriassist_saved_recs_v1';
+
+// Small deterministic hash -> seeded random
+function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){h ^= s.charCodeAt(i); h += (h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24);} return (h>>>0); }
+function seededRandom(seed){ let x = seed >>> 0; return function(){ x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return (x >>> 0) / 4294967295; } }
+function cap(s){ return s && s.length ? s[0].toUpperCase()+s.slice(1) : s; }
+
+/* -------------------------
+   Rule-based fertilizer recommender
+   ------------------------- */
+
+/*
+Approach:
+- For each crop, define baseline NPK per hectare (kg/ha) (simplified typical values).
+- Adjust according to soil pH, organic matter, soil type, and target yield.
+- Provide recommended fertilizer blends and approximate quantity (for common blends e.g., Urea(46-0-0), DAP(18-46-0), MOP(0-0-60), NPK blends).
+- All numbers are illustrative — remind user to confirm with local agronomist/lab.
+*/
+
+const baseline = {
+  maize: {N:120, P:60, K:40},
+  wheat: {N:100, P:50, K:40},
+  rice: {N:100, P:45, K:45},
+  cotton: {N:120, P:60, K:60},
+  sugarcane: {N:150, P:50, K:150},
+  soybean: {N:25, P:30, K:30},
+  tomato: {N:180, P:80, K:200},
+  potato: {N:150, P:80, K:200},
+  groundnut: {N:25, P:40, K:40}
+};
+
+const fertilizerCatalog = [
+  {name:'Urea (46-0-0)', N:46, P:0, K:0, note:'Fast N source (split application recommended)'},
+  {name:'DAP (18-46-0)', N:18, P:46, K:0, note:'Use at planting for P supply'},
+  {name:'MOP / SOP (0-0-60)', N:0, P:0, K:60, note:'Potassium source; MOP common; SOP if sulfur desirable'},
+  {name:'NPK 20-20-20 (balanced)', N:20, P:20, K:20, note:'Balanced fertilizer for top-dressing/foliar feeds'},
+  {name:'NPK 10-26-26', N:10, P:26, K:26, note:'P+K rich blend useful in K demanding crops'},
+  {name:'Ammonium Sulfate (21-0-0+S)', N:21, P:0, K:0, note:'Use where sulfur needed; acidifying effect'},
+  {name:'Organic compost (approx)', N:1, P:0.3, K:0.5, note:'Slow-release; improves soil structure'}
+];
+
+function recommend(crop, soilType, ph, area, organicLevel, targetText){
+  crop = crop.toLowerCase();
+  const base = baseline[crop] || {N:80,P:40,K:40};
+  // adjust for organic matter
+  const organicFactor = (organicLevel === 'high') ? -0.15 : (organicLevel === 'medium' ? -0.05 : 0.10);
+
+  // pH adjustments: low pH (<5.5) may reduce P availability: increase P need; high pH (>8) reduce micronutrients
+  let pAdjustP = 0;
+  let pAdjustK = 0;
+  if(ph < 5.5) pAdjustP = 0.18;
+  else if(ph < 6.5) pAdjustP = 0.06;
+  if(ph > 8.0) pAdjustK = 0.10;
+
+  // soil type influence: sandy soils leach nutrients -> increase N (and K)
+  let soilNadj = 0, soilKadj = 0;
+  if(soilType === 'sandy'){ soilNadj = 0.12; soilKadj = 0.10; }
+  if(soilType === 'clay'){ soilNadj = -0.04; soilKadj = 0; }
+
+  // target yield: if keywords 'high' or 'good' increase by 10-20%
+  const t = (targetText||'').toLowerCase();
+  let yieldFactor = 0;
+  if(t.includes('high') || t.includes('max') || t.includes('top')) yieldFactor = 0.18;
+  else if(t.includes('good') || t.includes('better')) yieldFactor = 0.08;
+
+  // compute adjusted NPK per ha
+  const rnd = seededRandom(hashStr(crop + '|' + soilType + '|' + Math.round(ph)));
+  const noise = (rnd()-0.5)*0.06; // small random jitter for realism
+  const NperHa = Math.round((base.N * (1 + organicFactor + soilNadj + yieldFactor) * (1 + noise)));
+  const PperHa = Math.round((base.P * (1 + pAdjustP + yieldFactor) * (1 + noise)));
+  const KperHa = Math.round((base.K * (1 + pAdjustK + soilKadj + yieldFactor) * (1 + noise)));
+
+  // total requirement for area (hectares)
+  const Ntot = Math.round(NperHa * area);
+  const Ptot = Math.round(PperHa * area);
+  const Ktot = Math.round(KperHa * area);
+
+  // recommend blends: greedy match from catalog
+  let needed = {N:Ntot, P:Ptot, K:Ktot};
+  // Prefer DAP at planting for P if P required
+  const picks = [];
+  // If organic matter low, suggest compost + chemical
+  if(organicLevel === 'low'){
+    picks.push({name:'Apply well-rotted compost', qty:`${Math.round(5 * area)} t total`, detail:'Apply before sowing to improve OM'});
+  } else if(organicLevel === 'high'){
+    picks.push({name:'Maintain organic matter', qty:'—', detail:'Compost/green manure reduces chemical need'});
+  }
+
+  // Always suggest DAP if P needed (>0)
+  if(needed.P > 0){
+    const dap = fertilizerCatalog.find(f=>f.name.startsWith('DAP'));
+    const dapQtyKg = Math.round((needed.P / dap.P) * 1); // kg of DAP supplies P = needed.P / (P% as decimal) * 100? careful below
+    // Note: catalog uses P as % of product (e.g., 46 is percent). To compute kg of product:
+    // kg_product = needed_P (kg) / (P%/100)
+    const dapKg = Math.round( needed.P / (dap.P / 100) );
+    picks.push({name:dap.name, qty:`${dapKg} kg`, detail:dap.note});
+    // subtract supplied
+    needed.P = Math.max(0, Math.round(needed.P - (dapKg * (dap.P/100))));
+    needed.N = Math.max(0, Math.round(needed.N - (dapKg * (dap.N/100))));
+  }
+
+  // Use Urea for remaining N
+  if(needed.N > 0){
+    const urea = fertilizerCatalog.find(f=>f.name.startsWith('Urea'));
+    const ureaKg = Math.round( needed.N / (urea.N / 100) );
+    picks.push({name:urea.name, qty:`${ureaKg} kg`, detail:urea.note});
+    needed.N = Math.max(0, Math.round(needed.N - (ureaKg * (urea.N/100))));
+  }
+
+  // Use MOP for remaining K
+  if(needed.K > 0){
+    const mop = fertilizerCatalog.find(f=>f.name.startsWith('MOP') || f.name.includes('MOP') || f.name.includes('MOP / SOP') );
+    const mopKg = Math.round( needed.K / (mop.K / 100) );
+    picks.push({name:mop.name, qty:`${mopKg} kg`, detail:mop.note});
+    needed.K = Math.max(0, Math.round(needed.K - (mopKg * (mop.K/100))));
+  }
+
+  // Balanced NPK suggestion as foliar/top-up
+  picks.push({name:'Balanced NPK (20-20-20)', qty:`${Math.round(1.0 * area * 5)} kg`, detail:'For top-dressing/foliar in critical growth stages'});
+
+  // Tips based on pH
+  const pHTips = [];
+  if(ph < 5.5) pHTips.push('Soil acidic: consider lime application and use phosphate fertilizers wisely.');
+  if(ph > 8.0) pHTips.push('Soil alkaline: some micronutrients (Fe, Zn) may be less available.');
+
+  return {
+    crop:cap(crop), soilType, ph, area, organicLevel, targetText,
+    perHa:{N:NperHa,P:PperHa,K:KperHa},
+    total:{N:Ntot,P:Ptot,K:Ktot},
+    picks, pHTips
+  };
+}
+
+/* -------------------------
+   UI: show recommendations
+   ------------------------- */
+function showRecommendation(rec){
+  summaryArea.innerHTML = `
+    <div class="small">Crop</div>
+    <div style="font-weight:700;font-size:16px">${rec.crop}</div>
+    <div class="small" style="margin-top:6px">Soil: ${rec.soilType} • pH ${rec.ph} • Organic: ${rec.organicLevel}</div>
+    <div class="small" style="margin-top:6px">Area: ${rec.area} ha • Note: ${rec.targetText || '—'}</div>
+  `;
+
+  npkBoxes.innerHTML = `
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <div style="flex:1;padding:12px;border-radius:10px;background:linear-gradient(180deg,#f7fff7,#eaffea);text-align:center">
+        <div class="small">N per ha</div><div style="font-weight:700;font-size:18px">${rec.perHa.N} kg/ha</div>
+        <div class="small" style="margin-top:6px">Total ${rec.total.N} kg</div>
+      </div>
+      <div style="flex:1;padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff7f7,#ffeaea);text-align:center">
+        <div class="small">P per ha</div><div style="font-weight:700;font-size:18px">${rec.perHa.P} kg/ha</div>
+        <div class="small" style="margin-top:6px">Total ${rec.total.P} kg</div>
+      </div>
+      <div style="flex:1;padding:12px;border-radius:10px;background:linear-gradient(180deg,#f7f7ff,#eaedff);text-align:center">
+        <div class="small">K per ha</div><div style="font-weight:700;font-size:18px">${rec.perHa.K} kg/ha</div>
+        <div class="small" style="margin-top:6px">Total ${rec.total.K} kg</div>
+      </div>
+    </div>
+  `;
+
+  // show fertilizer picks
+  fertList.innerHTML = rec.picks.map(p => `
+    <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+      <div class="nutri">${p.name.split(' ')[0]}</div>
+      <div class="recInfo">
+        <div style="font-weight:700">${p.name}</div>
+        <div class="small">${p.qty} • ${p.detail}</div>
+      </div>
+    </div>
+  `).join('') + (rec.pHTips.length ? `<div class="small" style="margin-top:8px"><strong>Soil tips:</strong> ${rec.pHTips.join(' ')}</div>` : '');
+
+  // show chat message summary and speak
+  const speakText = `Recommendation for ${rec.crop}. Nitrogen ${rec.perHa.N} kilograms per hectare, Phosphorus ${rec.perHa.P}, Potassium ${rec.perHa.K}. Suggested fertilizers include ${rec.picks.slice(0,3).map(x=>x.name).join(', ')}.`;
+  appendChat(`Recommendation generated for ${rec.crop} (${rec.area} ha).`, 'assistant');
+  speak(speakText);
+}
+
+/* -------------------------
+   Chat assistant: simple parser
+   ------------------------- */
+function appendChat(text, who='assistant'){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (who==='user' ? 'user' : 'assistant');
+  const bub = document.createElement('div');
+  bub.className = 'bubble ' + (who==='user' ? 'user' : 'assistant');
+  bub.innerText = text;
+  div.appendChild(bub);
+  chatWindow.appendChild(div);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function parseChatInput(input){
+  input = (input||'').trim();
+  if(!input) return appendChat('Please type a question or say a crop and soil, e.g., "Maize on clay soil, pH 5.8"','assistant');
+
+  appendChat(input,'user');
+
+  // try to extract crop, soil, pH, area, organic keywords
+  const lower = input.toLowerCase();
+
+  // if user asks to recommend, look for crop words
+  const cropList = Object.keys(baseline);
+  let foundCrop = cropList.find(c => lower.includes(c));
+  // soil types
+  const soils = ['loam','clay','sandy','silt','peat'];
+  let foundSoil = soils.find(s => lower.includes(s));
+  // pH extraction
+  let phMatch = lower.match(/ph\s*[:=]?\s*([45-9]\.?[0-9]?)/) || lower.match(/pH\s*([45-9]\.?[0-9]?)/i);
+  let foundPH = phMatch ? parseFloat(phMatch[1]) : null;
+  // area
+  let areaMatch = lower.match(/([0-9]+(?:\.[0-9]+)?)\s*(ha|hectare|hectares)/);
+  let foundArea = areaMatch ? parseFloat(areaMatch[1]) : 1;
+  // organic
+  const org = (lower.includes('organic') && lower.includes('high')) ? 'high' : (lower.includes('organic') && lower.includes('low') ? 'low' : null);
+  // 3-day/other -> irrelevant
+
+  // raining question or 'will it rain' is out of scope -> suggest form
+  if(lower.includes('rain') || lower.includes('weather')) return appendChat('This assistant provides fertilizer guidance. For weather, use the weather tool. Tell me crop and soil, e.g., "Maize clay pH 6.0 1 ha".','assistant');
+
+  // If found crop: run recommendation
+  if(foundCrop){
+    const rec = recommend(foundCrop, foundSoil || 'loam', foundPH || parseFloat(phEl.value) || 6.5, foundArea || parseFloat(areaEl.value) || 1, org || organicEl.value, '');
+    showRecommendation(rec);
+    return;
+  }
+
+  // fallback small talk
+  if(lower.includes('hello') || lower.includes('hi')) return appendChat('Hello! Tell me the crop and soil — e.g., "Wheat on sandy soil pH 6.2 2 ha".','assistant');
+  appendChat("I didn't understand. Ask like: 'Tomato on sandy soil pH 6.5 0.5 ha' or click the form and generate a recommendation.", 'assistant');
+}
+
+/* -------------------------
+   Speech: recognition & synthesis
+   ------------------------- */
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = navigator.language || 'en-US';
+  u.rate = 1; u.pitch = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+// recognition for micChat
+let recognition = null;
+function initRecognition(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){ micChat.style.display='none'; return; }
+  recognition = new SpeechRecognition();
+  recognition.lang = navigator.language || 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.onstart = ()=>{ micChat.classList.add('listening'); micChat.innerText = '🎙️...' };
+  recognition.onend = ()=>{ micChat.classList.remove('listening'); micChat.innerText = '🎤' };
+  recognition.onerror = (e)=>{ micChat.classList.remove('listening'); micChat.innerText='🎤'; appendChat("Couldn't understand — try again.", 'assistant'); }
+  recognition.onresult = (ev)=>{ const text = ev.results[0][0].transcript; chatInput.value = text; parseChatInput(text); }
+}
+initRecognition();
+
+/* -------------------------
+   Form handlers
+   ------------------------- */
+recForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const rec = recommend(cropEl.value, soilEl.value, parseFloat(phEl.value), parseFloat(areaEl.value), organicEl.value, targetEl.value);
+  showRecommendation(rec);
+});
+
+sendChat.addEventListener('click', ()=> {
+  const t = chatInput.value.trim();
+  if(!t) return;
+  parseChatInput(t);
+  chatInput.value = '';
+});
+chatInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') sendChat.click(); });
+
+micChat.addEventListener('click', ()=>{
+  if(!recognition) { appendChat('Voice input not supported in this browser.', 'assistant'); return; }
+  try{ recognition.start(); } catch(e){ console.warn(e); recognition.stop(); recognition.start(); }
+});
+
+/* -------------------------
+   Save / Load features
+   ------------------------- */
+function loadSaved(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  try{
+    const arr = JSON.parse(raw);
+    renderSaved(arr);
+  }catch(e){ console.warn('load saved error', e); }
+}
+function renderSaved(arr){
+  if(!arr || !arr.length){ savedList.innerHTML = '<div class="small">No saved records.</div>'; return; }
+  savedList.innerHTML = arr.map((r,idx)=>`
+    <div style="padding:8px;border-radius:8px;background:#fbfff9;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:700">${r.crop} • ${r.total.N}N ${r.total.P}P ${r.total.K}K</div>
+        <div class="small">${r.area} ha • ${r.soilType} • pH ${r.ph}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button style="padding:6px 8px;border-radius:8px;border:none;background:var(--accent);color:white;cursor:pointer" onclick="loadRecord(${idx})">Load</button>
+        <button style="padding:6px 8px;border-radius:8px;border:1px solid #eee;background:transparent;cursor:pointer" onclick="deleteRecord(${idx})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+function saveCurrent(){
+  // create rec from form values (same as recommend)
+  const rec = recommend(cropEl.value, soilEl.value, parseFloat(phEl.value), parseFloat(areaEl.value), organicEl.value, targetEl.value);
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const arr = raw ? JSON.parse(raw) : [];
+  arr.unshift(rec);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(0,10)));
+  loadSaved();
+  appendChat('Recommendation saved locally.', 'assistant');
+}
+function loadRecord(idx){
+  const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return;
+  const arr = JSON.parse(raw);
+  const r = arr[idx];
+  if(!r) return;
+  // populate form
+  cropEl.value = r.crop.toLowerCase();
+  soilEl.value = r.soilType;
+  phEl.value = r.ph;
+  areaEl.value = r.area;
+  organicEl.value = r.organicLevel;
+  targetEl.value = r.targetText;
+  showRecommendation(r);
+}
+function deleteRecord(idx){
+  const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return;
+  const arr = JSON.parse(raw);
+  arr.splice(idx,1);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  loadSaved();
+}
+
+/* -------------------------
+   Clear & save bindings
+   ------------------------- */
+saveBtn.addEventListener('click', saveCurrent);
+clearBtn.addEventListener('click', ()=>{ localStorage.removeItem(STORAGE_KEY); loadSaved(); appendChat('All saved records cleared.','assistant'); });
+
+/* -------------------------
+   Init / load
+   ------------------------- */
+loadSaved();
+appendChat('Welcome! Use the form to generate fertilizer recommendations, or ask via chat. Example: "Maize clay pH 5.8 1 ha".','assistant');
+
+// Expose some functions for debugging
+window.recommend = recommend;
+window.loadRecord = loadRecord;
+window.deleteRecord = deleteRecord;
+</script>
+</body>
+</html>
